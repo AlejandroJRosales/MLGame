@@ -27,6 +27,7 @@ class Player(object):
         self.time_betw_attacks = 1
         self.mode = "peaceful"
         self.user_select = False
+        self.alive = True
 
     def move(self, direc):
         self.x = (self.x + direc[0]) % self.screen_width
@@ -82,7 +83,7 @@ class AI(object):
         self.score = 0
         self.speed = 1
         self.coord_changes = [(self.speed, 0), (-self.speed, 0), (0, self.speed), (0, -self.speed)]
-        self.layers = [4, 7, 15, 15, 7, len(self.coord_changes)]
+        self.layers = [4, 7, len(self.coord_changes)]
         self.nn = list()
         self.nn = [[[random.uniform(-1, 1) for weight in range(self.layers[l_idx + 1])] for node in range(self.layers[l_idx])] for l_idx in range(len(self.layers) - 1)]
         self.output = 0
@@ -94,7 +95,7 @@ class AI(object):
     @staticmethod
     def softmax(vector):
         e = exp(vector)
-        return e / e.sum()
+        return e / e.sum()  
 
     def mutate_nn(self, min_update, max_update):
         # print("Positive Stimulus", self.iter_age) if max_update - 1 >= 1 - min_update else print("Negative Stimulus")
@@ -131,12 +132,13 @@ class AI(object):
         inputs = [self.x,
                   self.y,
                   self.objs[0].x,
-                  self.objs[0].y
+                  self.objs[0].y,
                   ]
         # inputs = [self.distance_formula(self.focused_obj.x, self.focused_obj.y), self.focused_obj.x, self.focused_obj.y, self.x, self.y]
         outputs = list(self.propagate(inputs))
         self.output = outputs.index(max(outputs))
         # might need multiple nns for multiple outputs?
+        # print(self.output)
         self.move(self.output)
         # attack
         # defense/offense
@@ -153,9 +155,9 @@ class AI(object):
 
     def update(self, objs):
         self.objs = objs
-        if self.iter_age % 150 == 1:
+        if self.iter_age % 100 == 1:
             # self.mutate_nn(math.log(0.99 * self.iter_age, 50), math.log(1.1 * self.iter_age, 50))
-            self.mutate_nn(0.99, 1.1)
+            self.mutate_nn(0.995, 1.005)
         self.iter_age += 1
         self.think()
         self.detect_collision()
@@ -182,7 +184,7 @@ class AI(object):
                 self.touch_time = time.time()
                 obj.destroy()
             if obj.rect.colliderect(self.rect) and isinstance(obj, Player):
-                self.mutate_nn(0.65, 1.05)
+                self.mutate_nn(0.99, 1.01)
                 self.die()
 
     def reset(self):
@@ -256,6 +258,7 @@ class Spear(object):
         self.destroyed = False
         self.score_decr = 2
         self.user_select = False
+        self.alive = True
 
     def move(self):
         self.x += self.incr

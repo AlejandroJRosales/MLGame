@@ -27,10 +27,10 @@ class Simulation:
         # spear = sprites.Spear((screen_width * .75, screen_height * .5), screen_width, screen_height)
 
         # instantiate object player of class AI
-        self.n_ais = 10
+        self.n_ais = 7
         self.ais = [sprites.AI((self.screen_width * random.random(), self.screen_height * random.random()), self.screen_width, self.screen_height) for count in range(self.n_ais)]
         # print(len(self.ais))
-        self.n_food = 0
+        self.n_food = 5
         self.food_list = [sprites.Food((self.screen_width * random.random(), self.screen_height * random.random())) for count in range(self.n_food)]
         self.entities = [self.player] + self.ais + self.food_list
         self.selected_obj = None
@@ -105,9 +105,10 @@ while True:
         # player.reset()
 
     [ai.update(sim.entities) for ai in sim.ais]
-    # food_list = [food for food in food_list if food.alive]
     [food.destroy() for food in sim.food_list if random.random() <= 0.0001]
-    # sim.food_list = sim.food_list + [sprites.Food((sim.screen_width * random.random(), sim.screen_height * random.random()))] if len(sim.food_list) <= sim.n_food else food_list
+    sim.ai = [ai for ai in sim.ais if ai.alive]
+    sim.food_list = [food for food in sim.food_list if food.alive]
+    sim.food_list = sim.food_list + [sprites.Food((sim.screen_width * random.random(), sim.screen_height * random.random()))] if len(sim.food_list) <= sim.n_food else sim.food_list
     sim.entities = [sim.player] + sim.ais + sim.food_list
 
     sim.clock.tick(sim.clock_speed)
